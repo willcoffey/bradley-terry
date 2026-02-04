@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "ESNext",
+    "lib": ["ESNext"],
+    "strict": true,
+    "moduleResolution": "bundler"
+  }
+}
