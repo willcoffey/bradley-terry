@@ -13,7 +13,7 @@ that I assume converges faster. The current (Feb 2026) wikipedia page for Bradle
 these two algorithms in the Inference/Worked example section leading to confusion.
 
 From formula 12 in the Newman paper
-$$\pi'_i = \frac{\sum_j w_{ij} \pi_j / (\pi_i + \pi_j)}{\sum_j w_{ji} / (\pi_i + \pi_j)}$$
+$`\\pi'_i = \frac{\sum_j w_{ij} \pi_j / (\pi_i + \pi_j)}{\sum_j w_{ji} / (\pi_i + \pi_j)}`$
 
 
 [2]: https://arxiv.org/abs/2207.00076
