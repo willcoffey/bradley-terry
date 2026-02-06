@@ -1,0 +1,20 @@
+{
+  "name": "bradley-terry",
+  "version": "1.0.0",
+  "description": "This is intended to be a simple implementation of the [Bradley-Terry][1] model. Code is written for easy of readability and verifiability over performance.",
+  "homepage": "https://github.com/willcoffey/bradley-terry#readme",
+  "bugs": {
+    "url": "https://github.com/willcoffey/bradley-terry/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/willcoffey/bradley-terry.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "bradley-terry.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}

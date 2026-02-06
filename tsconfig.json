@@ -1,9 +1,12 @@
 {
   "compilerOptions": {
+    "noEmit": true,
+    "typeRoots": ["./node_modules/@types"],
     "target": "ES2023",
     "module": "ESNext",
-    "lib": ["ESNext"],
+    "lib": ["ESNext", "DOM"],
     "strict": true,
     "moduleResolution": "bundler"
-  }
+  },
+  "include": ["**/*.ts"]
 }
