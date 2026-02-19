@@ -7,32 +7,37 @@
  *
  * so, [1][0] or Row B Column A represents the number of wins of B over A
  */
-type WinsTable = number[][];
+export type WinsTable = number[][];
 
-const MAX_ITERATIONS = 100;
+const MAX_ITERATIONS = 300;
+const TOLERANCE = .0001;
+
 export class BradleyTerry {
   static compute(table: WinsTable): number[] {
     assertValidWinsTable(table);
     // Initialize an array of parametrs [1,1,1,1....] that is the same length
     // as the table of wins
     let params = table[0].map(() => 1);
+    let change = Infinity;
     for (let i = 0; i < MAX_ITERATIONS; i++) {
-      params = BradleyTerry.computeNextIteration(params, table);
-      /** @TODO - Do a convergence test and break early */
+      [params, change] = BradleyTerry.computeNextIteration(params, table);
+      if (change < TOLERANCE) break;
     }
-
-    return params
+    return params;
   }
 
   /**
    * Returns the result of applying formula 26 from the newman paper once.
    */
-  static computeNextIteration(params: number[], table: WinsTable): number[] {
+  static computeNextIteration(params: number[], table: WinsTable): [number[], number] {
     const params_next = [];
+    let change = 0;
     for (let i = 0; i < params.length; i++) {
       params_next[i] = BradleyTerry.computeNextParam(i, params, table);
+      change += Math.pow(params_next[i] - params[i], 2);
     }
-    return params_next;
+    change = change / params.length;
+    return [params_next, change];
   }
 
   /**
@@ -61,10 +66,3 @@ function assertValidWinsTable(table: WinsTable) {
     if (row.length !== table.length) throw "Wins table is not N x N matrix";
   }
 }
-
-BradleyTerry.compute([
-  [0, 2, 0, 1],
-  [3, 0, 5, 0],
-  [0, 3, 0, 1],
-  [4, 0, 3, 0],
-]);
