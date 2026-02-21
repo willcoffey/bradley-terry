@@ -8,7 +8,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev_readme": "nodemon --watch README.md --exec \"markdown_compile README.md > index.html\"",
-    "build-gsheet": "esbuild gsheets-wrapper.ts --watch --bundle --format=esm --legal-comments=inline --tree-shaking=false --outfile=dist/gsheets-wrapper.js"
+    "build-gsheet": "esbuild gsheets-wrapper.ts --bundle --format=esm --legal-comments=inline --tree-shaking=false --outfile=dist/gsheets-wrapper.js\necho \"Remember to edit esbuild comments for BRADLEYTERRY and BRADLEYTERRY_TABLE to remove the /*! so the docs work in gsheets\""
   },
   "devDependencies": {
     "esbuild": "^0.27.3"
