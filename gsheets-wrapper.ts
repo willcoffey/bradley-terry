@@ -35,7 +35,7 @@ function coerceToTable(
   labeled?: boolean,
 ): { table: WinsTable; labels: string[] } {
   const [rows, columns] = [data.length, data[0] ? data[0].length : 0];
-  if (isNaN(data[0][1])) labeled = true;
+  if (isNaN(Number(data[0][1]))) labeled = true;
 
   /*!
    * If the input data has the same number of rows and columns, interpret as a table of wins

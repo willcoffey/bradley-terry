@@ -11,44 +11,51 @@ interface Results {
   random: Record<string, number>;
 }
 
-interface TrialResults {
-  matches: number;
-  competitors: number;
-  runs: number;
-  strengthError: number;
-  rankError: number;
+
+interface Trial {
+  parameters: {
+    competitors: number;
+    matches: number;
+    runs: number;
+  };
+  results: {
+    strengthError: number;
+    rankError: number;
+    oddsCorrectWinner: number;
+  };
 }
 
 function test() {
   runTrials();
-  //generateGraph();
-  /*
-  const strengths = generatePlayerStrengths(10);
-  const winsTable = playRandomMatches(strengths, 1001);
-  const results = normalize(BradleyTerry.compute(winsTable));
-
-  console.log(strengths);
-  console.log(results);
-
-  const error = computeSquaredError(strengths, results);
-  console.log(error);
- */
 }
 
+/**
+ * Runs a grid of trials over increasing match counts and logs mermaid charts
+ *
+ * Settings:
+ *   - competitors: number of players in each simulated tournament
+ *   - step: number of additional matches between each datapoint
+ *   - number_of_datapoints: how many points on the x-axis
+ *   - runs: how many independent simulations are averaged per datapoint
+ *     (higher = smoother curves, slower runtime)
+ *
+ * Each datapoint plays `step * i` total matches (starting at 0), runs the
+ * BradleyTerry solver, and records mean strength error and Kendall tau rank
+ * error averaged across all runs.
+ */
 function runTrials() {
   const settings = {
-    competitors: 15,
-    step: 6,
-    number_of_datapoints: 20,
-    runs: 20000,
+    competitors: 12,
+    step: 100,
+    number_of_datapoints: 100,
+    runs: 5000,
   };
-  const results: Record<string, Record<string, TrialResults>> = {};
+  const results: Record<string, Record<string, Trial>> = {};
 
-  /**
-   * Run loop for each datapoint to be generated, the number matches played
-   */
+  // Each iteration represents one x-axis datapoint: matches = step * i
   for (let i = 0; i < settings.number_of_datapoints; i++) {
     const matches = settings.step * i;
+    // Compare random matchmaking vs round-robin ordering at this match count
     const trial = runTrial(settings.competitors, matches, settings.runs, {
       random: playRandomMatches,
       roundrobin: playRoundRobin,
@@ -59,19 +66,25 @@ function runTrials() {
   logGraph(results);
 }
 
-function logGraph(results: Record<string, Record<string, TrialResults>>) {
+function logGraph(results: Record<string, Record<string, Trial>>) {
   const x_axis: string[] = [];
   const y_axis: number[][] = [];
   const rank_errors: number[][] = [];
+  const correct_winner: number[][] = [];
+  const firstTrial = Object.values(Object.values(results)[0])[0];
+  const competitors = firstTrial.parameters.competitors;
   for (const [matches, trial] of Object.entries(results)) {
     x_axis.push(matches);
     let i = 0;
     for (const [name, res] of Object.entries(trial)) {
       y_axis[i] = y_axis[i] ? y_axis[i] : [];
-      y_axis[i].push(res.strengthError);
+      y_axis[i].push(res.results.strengthError);
 
       rank_errors[i] = rank_errors[i] ? rank_errors[i] : [];
-      rank_errors[i].push(res.rankError);
+      rank_errors[i].push(res.results.rankError);
+
+      correct_winner[i] = correct_winner[i] ? correct_winner[i] : [];
+      correct_winner[i].push(res.results.oddsCorrectWinner);
 
       i++;
     }
@@ -79,7 +92,7 @@ function logGraph(results: Record<string, Record<string, TrialResults>>) {
   const md = `
 ${"```"}mermaid
 xychart-beta
-    title "Error vs Trials"
+    title "Mean Strength Error vs Matches for ${competitors} competitors"
     x-axis "Trials" ${x_axis[0]} --> ${x_axis[x_axis.length - 1]}
     line "Random" [${y_axis[0].map((n: number) => n.toFixed(4)).join(", ")}]
     line "Random" [${y_axis[1].map((n: number) => n.toFixed(4)).join(", ")}]
@@ -89,10 +102,19 @@ ${"```"}`;
   console.log(`
 ${"```"}mermaid
 xychart-beta
-    title "Rank Error vs Matches"
+    title "Kendall Tau Rank Error vs Matches for ${competitors} competitors"
     x-axis "Trials" ${x_axis[0]} --> ${x_axis[x_axis.length - 1]}
     line "Random" [${rank_errors[0].map((n: number) => n.toFixed(4)).join(", ")}]
     line "Random" [${rank_errors[1].map((n: number) => n.toFixed(4)).join(", ")}]
+${"```"}`);
+
+  console.log(`
+${"```"}mermaid
+xychart-beta
+    title "Odds Correct Winner vs Matches for ${competitors} competitors"
+    x-axis "Trials" ${x_axis[0]} --> ${x_axis[x_axis.length - 1]}
+    line "Random" [${correct_winner[0].map((n: number) => n.toFixed(4)).join(", ")}]
+    line "Round Robin" [${correct_winner[1].map((n: number) => n.toFixed(4)).join(", ")}]
 ${"```"}`);
 }
 
@@ -101,29 +123,29 @@ function runTrial(
   matches: number,
   runs: number,
   strategies: Record<string, Function>,
-): Record<string, TrialResults> {
-  const results: Record<string, TrialResults> = {};
+): Record<string, Trial> {
+  const results: Record<string, Trial> = {};
 
   for (const [name, fn] of Object.entries(strategies)) {
     results[name] = {
-      matches,
-      competitors,
-      runs,
-      strengthError: 0,
-      rankError: 0,
+      parameters: { competitors, matches, runs },
+      results: { strengthError: 0, rankError: 0, oddsCorrectWinner: 0 },
     };
 
     for (let i = 0; i < runs; i++) {
       const strengths = generatePlayerStrengths(competitors);
       const winsTable = fn(strengths, matches);
       const solution = normalize(BradleyTerry.compute(winsTable));
-      results[name].strengthError += computeMeanError(strengths, solution);
-      //results[name].rankError += computeRankError(strengths, solution);
-      results[name].rankError += normalizedKendallTauDistance(strengths, solution);
+      results[name].results.strengthError += computeMeanError(strengths, solution);
+      results[name].results.rankError += normalizedKendallTauDistance(strengths, solution);
+      const trueWinner = strengths.indexOf(Math.max(...strengths));
+      const predictedWinner = solution.indexOf(Math.max(...solution));
+      if (trueWinner === predictedWinner) results[name].results.oddsCorrectWinner++;
     }
 
-    results[name].strengthError = results[name].strengthError / runs;
-    results[name].rankError = Math.sqrt(results[name].rankError / runs);
+    results[name].results.strengthError /= runs;
+    results[name].results.rankError = Math.sqrt(results[name].results.rankError / runs);
+    results[name].results.oddsCorrectWinner /= runs;
   }
   return results;
 }
@@ -132,7 +154,7 @@ function generatePlayerStrengths(numPlayers: number): number[] {
   let sum = 0;
   const players: number[] = [];
   while (players.length < numPlayers) {
-    const strength = Math.random();
+    const strength = normalRandom();
     players.push(strength);
     sum += strength;
   }
@@ -282,6 +304,26 @@ function normalizedKendallTauDistance(a: number[], b: number[]): number {
     }
   }
   return d / (.5 * a.length * (a.length - 1));
+}
+
+/** From
+ * https://stackoverflow.com/questions/25582882/javascript-math-random-normal-distribution-gaussian-bell-curve
+ *
+ * Normal Distribution Between 0 and 1
+ * Building on Maxwell's Answer, this code uses the Box–Muller transform to give you a normal
+ * distribution between 0 and 1 inclusive. It just resamples the values if it's more than 3.6
+ * standard deviations away (less than 0.02% chance)
+ *
+ * joshuakcockrell
+ */
+function normalRandom(): number {
+  let u = 0, v = 0;
+  while (u === 0) u = Math.random(); //Converting [0,1) to (0,1)
+  while (v === 0) v = Math.random();
+  let num = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+  num = num / 10.0 + 0.5; // Translate to 0 -> 1
+  if (num > 1 || num < 0) return normalRandom(); // resample between 0 and 1
+  return num;
 }
 
 test();
