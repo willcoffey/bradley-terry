@@ -11,7 +11,6 @@ interface Results {
   random: Record<string, number>;
 }
 
-
 interface Trial {
   parameters: {
     competitors: number;
@@ -23,6 +22,13 @@ interface Trial {
     rankError: number;
     oddsCorrectWinner: number;
   };
+}
+
+interface Settings {
+  competitors: number;
+  step: number;
+  number_of_datapoints: number;
+  runs: number;
 }
 
 function test() {
@@ -44,11 +50,11 @@ function test() {
  * error averaged across all runs.
  */
 function runTrials() {
-  const settings = {
+  const settings: Settings = {
     competitors: 12,
     step: 100,
     number_of_datapoints: 100,
-    runs: 5000,
+    runs: 50,
   };
   const results: Record<string, Record<string, Trial>> = {};
 
@@ -63,16 +69,19 @@ function runTrials() {
     results[matches] = trial;
   }
 
-  logGraph(results);
+  logGraph(results, settings);
 }
 
-function logGraph(results: Record<string, Record<string, Trial>>) {
+function logGraph(results: Record<string, Record<string, Trial>>, settings: Settings) {
   const x_axis: string[] = [];
   const y_axis: number[][] = [];
   const rank_errors: number[][] = [];
   const correct_winner: number[][] = [];
-  const firstTrial = Object.values(Object.values(results)[0])[0];
-  const competitors = firstTrial.parameters.competitors;
+  /**
+   * Results is a record of # of matches to a record of test name (roundrobin, oddsCorrectWinner) 
+   * to trial results. I.e. for each step of # of matches there exist trial results for each 
+   * property that is being tested
+   */
   for (const [matches, trial] of Object.entries(results)) {
     x_axis.push(matches);
     let i = 0;
@@ -92,7 +101,7 @@ function logGraph(results: Record<string, Record<string, Trial>>) {
   const md = `
 ${"```"}mermaid
 xychart-beta
-    title "Mean Strength Error vs Matches for ${competitors} competitors"
+    title "Mean Strength Error vs Matches for ${settings.competitors} competitors"
     x-axis "Trials" ${x_axis[0]} --> ${x_axis[x_axis.length - 1]}
     line "Random" [${y_axis[0].map((n: number) => n.toFixed(4)).join(", ")}]
     line "Random" [${y_axis[1].map((n: number) => n.toFixed(4)).join(", ")}]
@@ -102,7 +111,7 @@ ${"```"}`;
   console.log(`
 ${"```"}mermaid
 xychart-beta
-    title "Kendall Tau Rank Error vs Matches for ${competitors} competitors"
+    title "Kendall Tau Rank Error vs Matches for ${settings.competitors} competitors"
     x-axis "Trials" ${x_axis[0]} --> ${x_axis[x_axis.length - 1]}
     line "Random" [${rank_errors[0].map((n: number) => n.toFixed(4)).join(", ")}]
     line "Random" [${rank_errors[1].map((n: number) => n.toFixed(4)).join(", ")}]
@@ -111,7 +120,7 @@ ${"```"}`);
   console.log(`
 ${"```"}mermaid
 xychart-beta
-    title "Odds Correct Winner vs Matches for ${competitors} competitors"
+    title "Odds Correct Winner vs Matches for ${settings.competitors} competitors"
     x-axis "Trials" ${x_axis[0]} --> ${x_axis[x_axis.length - 1]}
     line "Random" [${correct_winner[0].map((n: number) => n.toFixed(4)).join(", ")}]
     line "Round Robin" [${correct_winner[1].map((n: number) => n.toFixed(4)).join(", ")}]

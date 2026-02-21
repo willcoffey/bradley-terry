@@ -51,14 +51,14 @@ function assertValidWinsTable(table) {
 /*!
  * test
  */
-function BRADLEYTERRY(data, labeled) {
+function BRADLEYTERRY(data, labeled = true) {
   const { table, labels } = coerceToTable(data, labeled);
   const solution = BradleyTerry.compute(table).map((v, i) => {
     return [labels[i], v];
   });
   return solution;
 }
-function BRADLEYTERRY_TABLE(data, labeled) {
+function BRADLEYTERRY_TABLE(data, labeled = true) {
   const { table, labels } = coerceToTable(data, labeled);
   const rows = table.map((v, i) => {
     return [labels[i], ...v];
@@ -71,7 +71,6 @@ function BRADLEYTERRY_TABLE(data, labeled) {
  */
 function coerceToTable(data, labeled) {
   const [rows, columns] = [data.length, data[0] ? data[0].length : 0];
-  if (isNaN(data[0][1])) labeled = true;
   /*!
    * If the input data has the same number of rows and columns, interpret as a table of wins
    */

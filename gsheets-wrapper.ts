@@ -10,7 +10,7 @@ type SheetsTable = [HeaderRow, ...SheetsRow[]];
 /*!
  * test
  */
-function BRADLEYTERRY(data: WinsTable | Pairings | LabeledWinsTable, labeled?: boolean) {
+function BRADLEYTERRY(data: WinsTable | Pairings | LabeledWinsTable, labeled?: boolean = true) {
   const { table, labels } = coerceToTable(data, labeled);
   const solution = BradleyTerry.compute(table).map((v, i) => {
     return [labels[i], v];
@@ -18,7 +18,10 @@ function BRADLEYTERRY(data: WinsTable | Pairings | LabeledWinsTable, labeled?: b
   return solution;
 }
 
-function BRADLEYTERRY_TABLE(data: WinsTable | Pairings | LabeledWinsTable, labeled?: boolean) {
+function BRADLEYTERRY_TABLE(
+  data: WinsTable | Pairings | LabeledWinsTable,
+  labeled?: boolean = true,
+) {
   const { table, labels } = coerceToTable(data, labeled);
   const rows: SheetsRow[] = table.map((v, i) => {
     return [labels[i], ...v];
@@ -32,10 +35,9 @@ function BRADLEYTERRY_TABLE(data: WinsTable | Pairings | LabeledWinsTable, label
  */
 function coerceToTable(
   data: (string | number)[][],
-  labeled?: boolean,
+  labeled: boolean,
 ): { table: WinsTable; labels: string[] } {
   const [rows, columns] = [data.length, data[0] ? data[0].length : 0];
-  if (isNaN(Number(data[0][1]))) labeled = true;
 
   /*!
    * If the input data has the same number of rows and columns, interpret as a table of wins

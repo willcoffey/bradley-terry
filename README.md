@@ -42,7 +42,7 @@ or a table of wins
 
 @TODO - For example usage see [this google sheet][1]
 
-[2]: https://example.com
+[1]: https://example.com
 
 
 # Sources
