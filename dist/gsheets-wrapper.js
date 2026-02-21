@@ -48,8 +48,16 @@ function assertValidWinsTable(table) {
 }
 
 // gsheets-wrapper.ts
-/*!
- * test
+/**
+ * Computes Bradley-Terry model scores for a set of competitors.
+ *
+ * Accepts a square wins table (entry [i][j] = wins of i over j) or an Nx2 list of
+ * [winner, loser] pairings. Pass FALSE as the second argument if the wins table has no labels.
+ *
+ * @param {Array[][]} data - Square wins table or Nx2 [winner, loser] pairings.
+ * @param {boolean} labeled - Whether the wins table has row/column labels. Default: TRUE.
+ * @return {Array[][]} Two-column array of [label, score] pairs.
+ * @customfunction
  */
 function BRADLEYTERRY(data, labeled = true) {
   const { table, labels } = coerceToTable(data, labeled);
@@ -58,6 +66,17 @@ function BRADLEYTERRY(data, labeled = true) {
   });
   return solution;
 }
+/**
+ * Returns a labeled wins table from pairings or an existing wins table.
+ *
+ * Useful for inspecting the data passed to BRADLEYTERRY. Accepts the same input formats.
+ * Pass FALSE as the second argument if the wins table has no labels.
+ *
+ * @param {Array[][]} data - Square wins table or Nx2 [winner, loser] pairings.
+ * @param {boolean} labeled - Whether the wins table has row/column labels. Default: TRUE.
+ * @return {Array[][]} Labeled wins table with row and column headers.
+ * @customfunction
+ */
 function BRADLEYTERRY_TABLE(data, labeled = true) {
   const { table, labels } = coerceToTable(data, labeled);
   const rows = table.map((v, i) => {
@@ -66,8 +85,7 @@ function BRADLEYTERRY_TABLE(data, labeled = true) {
   return [["", ...labels], ...rows];
 }
 /*!
- * Takes in custom formula arguments and convertes it to a standard format. Labels are either loaded
- * or generated. A list of pairings is converted to a wins table
+ * Normalizes formula input to a wins table and labels. Handles labeled/unlabeled tables and pairings.
  */
 function coerceToTable(data, labeled) {
   const [rows, columns] = [data.length, data[0] ? data[0].length : 0];

@@ -6,9 +6,17 @@ type LabeledWinsTable = any;
 type HeaderRow = string[];
 type SheetsRow = [string, ...number[]];
 type SheetsTable = [HeaderRow, ...SheetsRow[]];
-
 /*!
- * test
+/**
+ * Computes Bradley-Terry model scores for a set of competitors.
+ *
+ * Accepts a square wins table (entry [i][j] = wins of i over j) or an Nx2 list of
+ * [winner, loser] pairings. Pass FALSE as the second argument if the wins table has no labels.
+ *
+ * @param {Array[][]} data - Square wins table or Nx2 [winner, loser] pairings.
+ * @param {boolean} labeled - Whether the wins table has row/column labels. Default: TRUE.
+ * @return {Array[][]} Two-column array of [label, score] pairs.
+ * @customfunction
  */
 function BRADLEYTERRY(data: WinsTable | Pairings | LabeledWinsTable, labeled?: boolean = true) {
   const { table, labels } = coerceToTable(data, labeled);
@@ -18,6 +26,18 @@ function BRADLEYTERRY(data: WinsTable | Pairings | LabeledWinsTable, labeled?: b
   return solution;
 }
 
+/*!
+/**
+ * Returns a labeled wins table from pairings or an existing wins table.
+ *
+ * Useful for inspecting the data passed to BRADLEYTERRY. Accepts the same input formats.
+ * Pass FALSE as the second argument if the wins table has no labels.
+ *
+ * @param {Array[][]} data - Square wins table or Nx2 [winner, loser] pairings.
+ * @param {boolean} labeled - Whether the wins table has row/column labels. Default: TRUE.
+ * @return {Array[][]} Labeled wins table with row and column headers.
+ * @customfunction
+ */
 function BRADLEYTERRY_TABLE(
   data: WinsTable | Pairings | LabeledWinsTable,
   labeled?: boolean = true,
@@ -30,8 +50,7 @@ function BRADLEYTERRY_TABLE(
 }
 
 /*!
- * Takes in custom formula arguments and convertes it to a standard format. Labels are either loaded
- * or generated. A list of pairings is converted to a wins table
+ * Normalizes formula input to a wins table and labels. Handles labeled/unlabeled tables and pairings.
  */
 function coerceToTable(
   data: (string | number)[][],
