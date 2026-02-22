@@ -9,7 +9,7 @@
  */
 export type WinsTable = number[][];
 
-const MAX_ITERATIONS = 300;
+const MAX_ITERATIONS = 1000;
 const TOLERANCE = .0001;
 
 export class BradleyTerry {
@@ -19,9 +19,12 @@ export class BradleyTerry {
     // as the table of wins
     let params = table[0].map(() => 1);
     let change = Infinity;
-    for (let i = 0; i < MAX_ITERATIONS; i++) {
+    for (let i = 0; i < MAX_ITERATIONS + 1; i++) {
       [params, change] = BradleyTerry.computeNextIteration(params, table);
       if (change < TOLERANCE) break;
+      if (i === MAX_ITERATIONS) {
+        throw `BradleyTerry failed to converge on solution after ${i} iterations`;
+      }
     }
     return params;
   }
@@ -59,6 +62,7 @@ export class BradleyTerry {
 
 /**
  * Verifies the wins table has entries and is N x N, i.e. square
+ * @TODO - Check the diagonals (competitor vs itself). How does this effect model?
  */
 function assertValidWinsTable(table: WinsTable) {
   if (!table.length) throw "No entries in wins table";
