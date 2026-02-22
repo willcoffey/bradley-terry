@@ -78,6 +78,10 @@ Quotes from paper section 5.
 # Simulation Results
 <!-- results -->
 
+With strength scores generated based on a normal distribution between 0 and 1.
+I do not expect that to match to much real world results. @TODO - get real world example data.
+
+
 ```mermaid
 xychart-beta
     title "Mean Strength Error vs Matches for 12 competitors"
